@@ -1,5 +1,5 @@
 use std::env;
-use std::process::ExitCode;
+use std::process::exit;
 use std::usize;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
@@ -27,9 +27,11 @@ fn pwd() {
 fn extract_params_inrange(args: &Vec<String>, inf: usize, sup: usize) -> Vec<String> {
     
     /* If the upper bound parameter is the MAX size for usize, we want to
-    extract all the elements of the vector, starting with lower bound position
-    and finishing with the last element of the vector */ 
+    extract all the elements of the Vector, starting with lower bound position
+    and finishing with the last element of the Vector */ 
     if sup == usize::MAX {
+        /* Use clone to avoid making changes to the original Vector, and then call
+        drain method to extract the wanted range */
         let params = args.clone().drain(inf..).collect::<Vec<String>>();
         return params;
     }
@@ -87,25 +89,69 @@ fn print_content(buffer: Result<Lines<BufReader<File>>, ()>) -> bool {
     }
 }
 
+fn cat(files: Vec<String>) -> bool {
+    /* If you type just "cat" in terminal, it enters in an infinte loop and 
+    it can be stopped only by interrupting the process it creates*/
+    if !files.is_empty() {
+        loop {
+
+        };
+    };
+
+    let mut code: bool = true;
+    
+    for filename in files {
+        // Open the file
+        let file_struc: Option<File> = open_file(&filename);
+        
+        // Read content in a buffer
+        let buf = read_file(file_struc);
+        
+        // Print content or error if file doesn't exist
+        match print_content(buf) {
+            false => {
+                println!("cat: {}: No such file or directory", filename);
+                code = false;
+            },
+
+            true => (),
+        };
+    };
+
+    if code == true{
+        true
+    } else {
+        false
+    }
+
+}
 
 
-fn main() -> ExitCode {
+
+fn main() {
     let args: Vec<String> = env::args().collect();
 
     match args[1].as_str() {
         "pwd" => {
             pwd();
-            return ExitCode::SUCCESS;
+            std::process::exit(0);
         },
         "cat" => {
             let params = extract_params_inrange(&args, 2, usize::MAX);
-            println!("{:?}", args);
-            println!("{:?}", params);
-            return ExitCode::SUCCESS;
+            
+            /* I used a NOT when declaring the error variable for a more 
+            concise statement, easier to understand, in the next if */
+            let error = !cat(params);
+            println!("error = {}", error);
+            if error {
+                std::process::exit(-20);
+            } else {
+                std::process::exit(0);
+            };
         },
         _ => {
             println!("Invalid command");
-            return ExitCode::FAILURE;
+            std::process::exit(-1);
         },
     };
 
