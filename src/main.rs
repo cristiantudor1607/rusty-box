@@ -2,6 +2,7 @@ use std::env;
 use std::process::ExitCode;
 use std::usize;
 use std::fs::File;
+use std::io::{BufRead, BufReader, Lines};
 
 /* Suggestions: 1. Write a function for every command
                 2. Start with the pwd command
@@ -48,14 +49,42 @@ fn open_file(filename: &String) -> Option<File> {
     f
 }
 
-fn read_file(file: Option<File>) -> Result<Lines<BufReader<File>>, bool>{
+fn read_file(file: Option<File>) -> Result<Lines<BufReader<File>>, ()>{
     match file {
+        /* For this part, the approach is similar with the one used in error
+        propagation exercise in the 2nd lab */
         Some(file) => {
+            let content = BufReader::new(file).lines();
+            return Ok(content);
+        },
+        None => {
+            return Err(());
+        },
+    };
 
+}
+
+fn print_content(buffer: Result<Lines<BufReader<File>>, ()>) -> bool {
+    match buffer {
+        /* If the buffer was created and loaded succesfully, print it's
+        content */
+        Ok(buffer) => {
+            for line in buffer {
+                match line {
+                    Ok(text) => println!("{}", text),
+                    Err(_) => return false,
+                }
+            }
+
+            return true;
         },
 
+        /* If there have been an issuse, do nothing and let the caller of the
+        function know that there is a problem */
+        Err(()) => {
+            return false;
+        }
     }
-
 }
 
 
