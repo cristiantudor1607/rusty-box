@@ -1,5 +1,5 @@
 use std::env;
-use std::process::exit;
+//use std::process::exit;
 use std::usize;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
@@ -91,12 +91,16 @@ fn print_content(buffer: Result<Lines<BufReader<File>>, ()>) -> bool {
 
 fn cat(files: Vec<String>) -> bool {
     /* If you type just "cat" in terminal, it enters in an infinte loop and 
-    it can be stopped only by interrupting the process it creates*/
-    if !files.is_empty() {
-        loop {
+    it can be stopped only by interrupting the process it creates; While in the
+    loop, you can type strings and it will imediately display the string on the
+    next line*/
+    // if !files.is_empty() {
+    //     loop {
+    //         println!("inf loop");
+    //     };
+    // };
 
-        };
-    };
+    println!("!!!!CAT IS RUNNING!!!!");
 
     let mut code: bool = true;
     
@@ -129,6 +133,7 @@ fn cat(files: Vec<String>) -> bool {
 
 
 fn main() {
+
     let args: Vec<String> = env::args().collect();
 
     match args[1].as_str() {
@@ -141,7 +146,7 @@ fn main() {
             
             /* I used a NOT when declaring the error variable for a more 
             concise statement, easier to understand, in the next if */
-            let error = !cat(params);
+            let error = cat(params);
             println!("error = {}", error);
             if error {
                 std::process::exit(-20);
