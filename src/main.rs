@@ -6,6 +6,7 @@ mod utils;
 mod pwd;
 mod cat;
 mod mkdir;
+mod rmdir;
 
 /* All the methods I use are taken from doc.rust-lang.org */
 
@@ -39,6 +40,10 @@ fn main() {
         },
         "rmdir" => {
             let dirs = utils::extract_params_inrange(&args, 2, usize::MAX);
+            match rmdir::rmdir(dirs) {
+                Ok(_) => exit(0),
+                Err(_) => exit(-60),
+            };
         }
         _ => {
             println!("Invalid command");

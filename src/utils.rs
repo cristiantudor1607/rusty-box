@@ -1,6 +1,12 @@
 use std::usize;
 use std::path::Path;
 
+pub enum PathStatus {
+    IsDir,
+    IsFile,
+    IsNot,
+}
+
 pub fn extract_params_inrange(args: &Vec<String>, inf: usize, sup: usize) -> Vec<String> {
     
     /* If the upper bound parameter is the MAX size for usize, we want to
@@ -34,4 +40,27 @@ pub fn check_path(path: &String) -> Result<bool, std::io::Error> {
             return Err(e);
         },
     };
+}
+
+/* check_dir function return a PathStatus value, if the provided path can
+be reached, or throws an error, otherwise */
+pub fn check_dir(dir: &String) -> Result<PathStatus, std::io::Error> {
+   
+    /* First check if the path really exists */
+    match check_path(dir) {
+        Ok(ret) => {
+            match ret {
+                true => (),
+                false => return Ok(PathStatus::IsNot),
+            };
+        },
+        Err(e) => return Err(e),
+    };
+
+    /* Now, check if it is a directory */
+    match Path::new(dir).is_dir() {
+        false => return Ok(PathStatus::IsFile),
+        true => return Ok(PathStatus::IsDir),
+    };
+
 }
