@@ -4,9 +4,11 @@ use std::usize;
 
 mod utils;
 mod pwd;
+mod echo;
 mod cat;
 mod mkdir;
 mod rmdir;
+
 
 /* All the methods I use are taken from doc.rust-lang.org */
 
@@ -44,7 +46,16 @@ fn main() {
                 Ok(_) => exit(0),
                 Err(_) => exit(-60),
             };
-        }
+        },
+        "echo" => {
+            match echo::echo(&args) {
+                Ok(_) => exit(0),
+                Err(e) => {
+                    println!("echo: unexpected error: {}", e);
+                    exit(-10);
+                },
+            };
+        },
         _ => {
             println!("Invalid command");
             exit(-1);
