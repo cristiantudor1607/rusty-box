@@ -7,11 +7,14 @@ pub enum PathStatus {
     IsNot,
 }
 
+/* https://users.rust-lang.org/t/how-to-compare-2-enum-variables/59753 */
+#[derive(Debug, PartialEq, Eq)]
 pub enum RmOption {
     Recursive,
-    Dir,
+    EmptyDirs,
+    OnlyFiles,
+    All,
 }
-
 
 pub fn extract_params_inrange(args: &Vec<String>, inf: usize, sup: usize) -> Vec<String> {
     

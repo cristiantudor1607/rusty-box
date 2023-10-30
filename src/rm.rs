@@ -5,59 +5,71 @@ use crate::utils::RmOption as RmOption;
 use crate::utils::extract_params_inrange as get_names;
 use crate::utils::check_dir as check_dir;
 
-pub fn set_options(args: &Vec<String>) -> Option<RmOption> {
-    let opt = args[2].as_str();
+// TODO: Add messages when errors are encountered
 
-    if opt == "-r" || opt == "-R" || opt == "--recursive" {
-        return Some(RmOption::Recursive);
+pub fn set_options(args: &Vec<String>) -> RmOption {
+    
+    /* Set the return variable to the implicit option */
+    let mut ret = RmOption::OnlyFiles;
+
+    for arg in args {
+        let item = arg.as_str();
+        match item {
+            "-d" | "--dir" => {
+                /* If the option was previously set to Recursive, set to All */
+                if ret == RmOption::Recursive {
+                    ret = RmOption::All;
+                } else {
+                    ret = RmOption::EmptyDirs;
+                };
+            },
+            "-r" | "-R" | "--recursive" => {
+                /* If the option was previously set to EmptyDirs, set to All */
+                if ret == RmOption::EmptyDirs {
+                    ret = RmOption::All;
+                } else {
+                    ret = RmOption::Recursive;
+                };
+            },
+            _ => (),
+        };
     };
 
-    if opt == "-d" || opt == "--dir" {
-        return Some(RmOption::Dir);
-    };
-
-    return None;
+    return ret;
 }
 
-/* del_dir function analyzes the option provided and delete the directory,
+/* delete_dir function analyzes the option provided and delete the directory,
 if possible */
-pub fn del_dir(name: &String, opt: &Option<RmOption>) -> Result<(), std::io::Error> {
-
+pub fn delete_dir(name: &String, opt: &RmOption) -> Result<(), std::io::Error> {
     match opt {
-        /* If there isn't an option, the directory can't be deleted */
-        None => {
-            eprintln!("rm: cannot remove '{}': Is a directory", name);
-            return  Err(Error::from(ErrorKind::Other));
-        },
-
-        /* Choose what type of deletion should perform */
-        Some(opt_type) => {
-            match opt_type {
-                /* If -d or --dir option is active, it should call the
-                remove_dir method */
-                RmOption::Dir => {
-                    match remove_dir(name) {
-                        Ok(_) => (),
-                        Err(e) => return Err(e),
-                    }
-                },
-                /* If -r, -R or --recursive option is active, it should
-                call the remove_dir_all method */
-                RmOption::Recursive => {
-                    match remove_dir_all(name) {
-                        Ok(_) => (),
-                        Err(e) => return  Err(e),
-                    }
-                },
+        /* If the option is OnlyFiles, do nothing and return an error*/
+        // TODO: Add message
+        RmOption::OnlyFiles =>
+            return Err(Error::from(ErrorKind::Other)),
+        
+        /* If the option is EmptyDirs, it should call the remove_dir function,
+        to delete just the empty directors */
+        RmOption::EmptyDirs => {
+            match remove_dir(name) {
+                Ok(_) => (),
+                Err(e) => return Err(e),
             };
         },
-    };
+
+        /* If the option is Recursive or All, it should call the remove_dir_all
+        function, to delete everything */
+        RmOption::Recursive | RmOption::All => {
+            match remove_dir_all(name) {
+                Ok(_) => (),
+                Err(e) => return Err(e),
+            };
+        },
+    }
 
     Ok(())
 }
 
-pub fn remove_entry(name: &String, opt: &Option<RmOption>) -> Result<(), std::io::Error> {
-
+pub fn rmentry(name: &String, opt: &RmOption) -> Result<(), std::io::Error> {
     /* Determine if the name describes a file or a directory in the system */
     let entry_type: PathStatus;
     match check_dir(name) {
@@ -90,7 +102,7 @@ pub fn remove_entry(name: &String, opt: &Option<RmOption>) -> Result<(), std::io
         },
         /* If the entry is a directory, we should check the options */
         PathStatus::IsDir => {
-            match del_dir(name, &opt) {
+            match delete_dir(name, opt) {
                 Ok(_) => (),
                 Err(e) => return Err(e),
             };
@@ -98,8 +110,7 @@ pub fn remove_entry(name: &String, opt: &Option<RmOption>) -> Result<(), std::io
         /* It will never reach this point */
         _ => (),
     };
-
-
+    
     Ok(())
 }
 
@@ -114,28 +125,35 @@ pub fn rm(args: &Vec<String>) -> Result<(), std::io::Error> {
     let opt = set_options(args);
     let names: Vec<String>;
 
-
     match opt {
-        /* If there is an option, the names starts with the 4th string in
-        list */
-        Some(_) => {
-            names = get_names(args, 3, usize::MAX);
-        },
         /* If there are no options, the names starts with the 3rd string in
-        list */
-        None => {
-            names = get_names(args, 2, usize::MAX);
-        },
+        list (at index 2) */
+        RmOption::OnlyFiles =>
+            names = get_names(args, 2, usize::MAX),
+        /* If there is an option, the names starts with the 4th string in
+        list (at index 3) */
+        RmOption::Recursive | RmOption::EmptyDirs =>
+            names = get_names(args, 3, usize::MAX),
+        /* If there are 2 options, the names starts with the 5th string in
+        list (at index 4) */
+        RmOption::All => 
+            names = get_names(args, 4, usize::MAX),
     };
 
+    /* Variable to remember if there was an error at some point, while
+    deleting the entries */
+    let mut error = false;
+    
     for name in names {
-        match remove_entry(&name, &opt) {
+        match rmentry(&name, &opt) {
             Ok(_) => (),
-            // TODO: save the errors and print them -> DO SOMETHING!!
-            // i have to
-            Err(e) => return Err(e),
-        }
+            Err(_) => error = true,
+        };
     }
+
+    if error {
+        return Err(Error::from(ErrorKind::Other));
+    };
 
     Ok(())
 }

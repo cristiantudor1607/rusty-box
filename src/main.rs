@@ -69,7 +69,7 @@ fn main() {
                 Ok(_) => exit(0),
                 Err(_) => exit(-70),
             };
-        }
+        },
         _ => {
             println!("Invalid command");
             exit(-1);
