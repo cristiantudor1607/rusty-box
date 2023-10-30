@@ -1,0 +1,2 @@
+TODO: Fa ceva mai consistent cu erorile, sa fie la toate functiile la fel modul de a parsa erorile.
+Renunta la mesaje, adauga coduri, si scrie mesaje pe baza codurilor

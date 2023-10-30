@@ -15,7 +15,6 @@ mod rm;
 /* All the methods I use are taken from doc.rust-lang.org */
 
 fn main() {
-
     let args: Vec<String> = env::args().collect();
 
     match args[1].as_str() {
@@ -67,7 +66,7 @@ fn main() {
         "rm" => {
             match rm::rm(&args) {
                 Ok(_) => exit(0),
-                Err(_) => exit(-70),
+                Err(my_code) => exit(my_code),
             };
         },
         _ => {

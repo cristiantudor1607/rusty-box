@@ -6,6 +6,42 @@ use crate::utils::extract_params_inrange as get_names;
 use crate::utils::check_dir as check_dir;
 
 // TODO: Add messages when errors are encountered
+pub fn check_rmargs(args: &Vec<String>) -> Result<(), std::io::Error> {
+    /* If it has more than 4 strings in list, then the command should be
+    valid */
+    let n = args.len();
+    if n > 4 {
+        return Ok(());
+    };
+
+    if n == 2 {
+        println!("Invalid command");
+        return Err(Error::from(ErrorKind::InvalidInput));
+    }
+
+    /* Count the number of options */
+    let mut opt_counter = 0;
+    
+    for arg in args {
+        match arg.as_str() {
+            "-d" | "--dir" | "-r" | "-R" | "--recursive" =>
+                opt_counter += 1,
+            _ => (),
+        };
+    };
+
+    if n == 3 && opt_counter == 1 {
+        println!("Invalid command");
+        return Err(Error::from(ErrorKind::InvalidInput));
+    };
+
+    if n == 4 && opt_counter == 2 {
+        println!("Invalid command");
+        return Err(Error::from(ErrorKind::InvalidInput));
+    }
+
+    Ok(())
+}
 
 pub fn set_options(args: &Vec<String>) -> RmOption {
     
@@ -114,11 +150,11 @@ pub fn rmentry(name: &String, opt: &RmOption) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-pub fn rm(args: &Vec<String>) -> Result<(), std::io::Error> {
+pub fn rm(args: &Vec<String>) -> Result<(), i32> {
     /* Check the user input */
-    if args.len() == 2 {
-        eprintln!("rm: missing operand");
-        return Err(Error::from(ErrorKind::InvalidInput));
+    match check_rmargs(&args) {
+        Ok(_) => (),
+        Err(_) => return Err(-1),
     };
 
     /* Set the options */
@@ -152,7 +188,7 @@ pub fn rm(args: &Vec<String>) -> Result<(), std::io::Error> {
     }
 
     if error {
-        return Err(Error::from(ErrorKind::Other));
+        return Err(-70);
     };
 
     Ok(())
