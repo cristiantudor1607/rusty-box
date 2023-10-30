@@ -8,6 +8,8 @@ mod echo;
 mod cat;
 mod mkdir;
 mod rmdir;
+mod mv;
+mod rm;
 
 
 /* All the methods I use are taken from doc.rust-lang.org */
@@ -25,7 +27,7 @@ fn main() {
             let params = utils::extract_params_inrange(&args, 2, usize::MAX);
             
             /* I used a NOT because I want the error variable to be true when
-            there is an actual error */
+            there is an error  */
             let error = !cat::cat(params);
             if error == true {
                 exit(-20);
@@ -56,6 +58,20 @@ fn main() {
                 },
             };
         },
+        "mv" => {
+            match mv::mv(&args) {
+                Ok(_) => (),
+                Err(_) => exit(-40),
+            };
+        },
+        "rm" => {
+            match rm::set_options(&args) {
+                Some(_) => (),
+                None => (),
+            };
+
+            exit(0);
+        }
         _ => {
             println!("Invalid command");
             exit(-1);

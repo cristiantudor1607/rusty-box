@@ -7,6 +7,12 @@ pub enum PathStatus {
     IsNot,
 }
 
+pub enum RmOption {
+    Recursive,
+    Dir,
+}
+
+
 pub fn extract_params_inrange(args: &Vec<String>, inf: usize, sup: usize) -> Vec<String> {
     
     /* If the upper bound parameter is the MAX size for usize, we want to
