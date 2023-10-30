@@ -60,17 +60,15 @@ fn main() {
         },
         "mv" => {
             match mv::mv(&args) {
-                Ok(_) => (),
+                Ok(_) => exit(0),
                 Err(_) => exit(-40),
             };
         },
         "rm" => {
-            match rm::set_options(&args) {
-                Some(_) => (),
-                None => (),
+            match rm::rm(&args) {
+                Ok(_) => exit(0),
+                Err(_) => exit(-70),
             };
-
-            exit(0);
         }
         _ => {
             println!("Invalid command");
