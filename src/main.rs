@@ -20,6 +20,8 @@ mod ln;
 use ln::ln as ln;
 mod cp;
 use cp::cp as cp;
+mod touch;
+use touch::touch as touch;
 
 
 fn main() {
@@ -116,6 +118,17 @@ fn main() {
                 },
                 Err(_) => exit(-90),
             };
+        },
+        "touch" => match touch(&args) {
+            Ok(code) => {
+                match code {
+                    -1 => { println!("Invalid command"); exit(-1); },
+                    0 => exit(0),
+                    _ => (),
+                };
+            },
+
+            Err(_) => exit(-100),
         },
         _=> {
             println!("Invalid command");
