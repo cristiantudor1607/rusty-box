@@ -1,75 +1,73 @@
+use std::io::{Lines, BufReader, BufRead};
 use std::usize;
+use std::fs::File;
 use std::path::Path;
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum PathStatus {
     IsDir,
     IsFile,
     IsNot,
 }
 
-/* https://users.rust-lang.org/t/how-to-compare-2-enum-variables/59753 */
-#[derive(Debug, PartialEq, Eq)]
-pub enum RmOption {
-    Recursive,
-    EmptyDirs,
-    OnlyFiles,
-    All,
-}
-
-pub fn extract_params_inrange(args: &Vec<String>, inf: usize, sup: usize) -> Vec<String> {
+pub fn set_path_status(path: &String) -> Result<PathStatus, std::io::Error> {
+    let path_struc = Path::new(path);
     
-    /* If the upper bound parameter is the MAX size for usize, we want to
-    extract all the elements of the Vector, starting with lower bound position
-    and finishing with the last element of the Vector */ 
-    if sup == usize::MAX {
-        /* Use clone to avoid making changes to the original Vector, and then call
-        drain method to extract the wanted range */
-        let params = args.clone().drain(inf..).collect::<Vec<String>>();
-        return params;
-    }
-    
-    /* If the upper bound is not MAX, we extract from an actual range */
-    let params = args.clone().drain(inf..sup).collect();
-    return params;
-}
-
-/**
- * check_path function returns a boolean value which describe if the
- * path exists or not (true or false), or drops and error is try_exists
- * fail
- */
-pub fn check_path(path: &String) -> Result<bool, std::io::Error> {
-    let my_path = Path::new(path);
-
-    match my_path.try_exists() {
+    match path_struc.try_exists() {
         Ok(ret) => {
-            return Ok(ret);
+            /* Test if the path doesn't exist */
+            if ret == false {
+                return Ok(PathStatus::IsNot);
+            };
         },
+        /* Check for unexpected errors */
+        Err(e) => return Err(e),
+    };
+
+    match path_struc.is_dir() {
+        true => return Ok(PathStatus::IsDir),
+        false => return Ok(PathStatus::IsFile),
+    };
+}
+
+pub fn open_file(filename: &String) -> Result<File, std::io::Error> {
+    let file = File::open(filename);
+    match file {
+        Ok(fobj) => return Ok(fobj),
         Err(e) => {
+            eprintln!("unexpected error: {}", e);
             return Err(e);
         },
     };
 }
 
-/* check_dir function return a PathStatus value, if the provided path can
-be reached, or throws an error, otherwise */
-pub fn check_dir(dir: &String) -> Result<PathStatus, std::io::Error> {
-   
-    /* First check if the path really exists */
-    match check_path(dir) {
-        Ok(ret) => {
-            match ret {
-                true => (),
-                false => return Ok(PathStatus::IsNot),
-            };
-        },
-        Err(e) => return Err(e),
-    };
+pub fn read_file(file: File) -> Lines<BufReader<File>> {
+    return  BufReader::new(file).lines();
+}
 
-    /* Now, check if it is a directory */
-    match Path::new(dir).is_dir() {
-        false => return Ok(PathStatus::IsFile),
-        true => return Ok(PathStatus::IsDir),
-    };
+pub fn get_params(args: &Vec<String>, range: (usize, usize)) -> Vec<String> {
+    let inf = range.0;
+    let sup = range.1;
 
+    /* If the upper bound parameter is the MAX size for usize, we want to
+    get all the elements of the Vector, starting with lower bound index
+    and ending with the last element of the Vector */ 
+    if sup == usize::MAX {
+        /* Use clone to avoid making changes to the original Vector, and then call
+        drain method to extract the elements from the range */
+        let params = args.clone().drain(inf..).collect::<Vec<String>>();
+        return params;
+    }
+
+    /* If the upper bound is not MAX, we extract from a limited range */
+    let params = args.clone().drain(inf..sup).collect();
+    return params;
+}
+
+pub fn get_string(args: &Vec<String>, index: usize) -> Option<String> {
+    if index >= args.len() {
+        return None;
+    } else {
+        return Some(args[index].clone());
+    };
 }

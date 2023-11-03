@@ -1,78 +1,125 @@
 use std::env;
 use std::process::exit;
-use std::usize;
 
 mod utils;
 mod pwd;
-mod echo;
+use pwd::pwd as pwd;
 mod cat;
+use cat::cat as cat;
 mod mkdir;
+use mkdir::mkdir as mkdir;
 mod rmdir;
+use rmdir::rmdir as rmdir;
+mod echo;
+use echo::echo as echo;
 mod mv;
+use mv::mv as mv;
 mod rm;
+use rm::rm as rm;
+mod ln;
+use ln::ln as ln;
+mod cp;
+use cp::cp as cp;
 
-
-/* All the methods I use are taken from doc.rust-lang.org */
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-
+    
     match args[1].as_str() {
         "pwd" => {
-            pwd::pwd();
+            pwd();
             exit(0);
         },
         "cat" => {
-            let params = utils::extract_params_inrange(&args, 2, usize::MAX);
-            
-            /* I used a NOT because I want the error variable to be true when
-            there is an error  */
-            let error = !cat::cat(params);
-            if error == true {
-                exit(-20);
-            } else {
-                exit(0);
+            match cat(&args) {
+                Ok(_) => exit(0),
+                Err(_) => exit(-20),
             };
         },
         "mkdir" => {
-            let dirs = utils::extract_params_inrange(&args, 2, usize::MAX);
-            match mkdir::mkdir(dirs) {
-                Ok(()) => exit(0),
+            match mkdir(&args) {
+                Ok(code) => {
+                    match code {
+                        -1 => { println!("Invalid command"); exit(-1); },
+                        0 => exit(0),
+                        _ => (),
+                    };
+                },
                 Err(_) => exit(-30),
             };
         },
         "rmdir" => {
-            let dirs = utils::extract_params_inrange(&args, 2, usize::MAX);
-            match rmdir::rmdir(dirs) {
-                Ok(_) => exit(0),
+            match rmdir(&args) {
+                Ok(code) => {
+                    match code {
+                        -1 => { println!("Invalid command"); exit(-1); },
+                        0 => exit(0),
+                        _ => (),
+                    };
+                },
                 Err(_) => exit(-60),
-            };
+            }   
         },
         "echo" => {
-            match echo::echo(&args) {
-                Ok(_) => exit(0),
-                Err(e) => {
-                    println!("echo: unexpected error: {}", e);
-                    exit(-10);
-                },
+            match echo(&args) {
+                /* In this case the code can only be 0 */
+                Ok(code) => exit(code),
+                Err(_) => exit(-10),
             };
         },
         "mv" => {
-            match mv::mv(&args) {
-                Ok(_) => exit(0),
+            match mv(&args) {
+                Ok(code) => {
+                    match code {
+                        -1 => { println!("Invalid command"); exit(-1); },
+                        0 => exit(0),
+                        /* It will never go to this arm */
+                        _ => (),
+                    };
+                },
                 Err(_) => exit(-40),
             };
         },
         "rm" => {
-            match rm::rm(&args) {
-                Ok(_) => exit(0),
-                Err(my_code) => exit(my_code),
+            match rm(&args) {
+                Ok(code) => {
+                    match code {
+                        -1 => { println!("Invalid command"); exit(-1); },
+                        0 => exit(0),
+                        _ => (),
+                    };
+                },
+
+                Err(_) => exit(-70),
             };
         },
-        _ => {
+        "ln" => {
+            match ln(&args) {
+                Ok(code) => {
+                    match code {
+                        -1 => { println!("Invalid command"); exit(-1); },
+                        0 => exit(0),
+                        _ => (),
+                    };
+                },
+                Err(_) => exit(-50),
+            };
+        },
+        "cp" => {
+            match cp(&args) {
+                Ok(code) => {
+                    match code {
+                        -1 => { println!("Invalid command"); exit(-1); },
+                        0 => exit(0),
+                        _ => (),
+                    };
+                },
+                Err(_) => exit(-90),
+            };
+        },
+        _=> {
             println!("Invalid command");
             exit(-1);
-        },
-    };
-
+        }
+    }
 }

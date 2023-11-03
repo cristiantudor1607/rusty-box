@@ -1,60 +1,58 @@
-use std::io::{Error, ErrorKind};
 use std::fs;
+use crate::utils::get_params;
+use crate::utils::PathStatus;
+use crate::utils::set_path_status;
 
-use crate::utils;
+pub fn rmdir(args: &Vec<String>) -> Result<i32, ()> {
+    /* If the user types rustybox rmdir */
+    if  args.len() == 2 {
+        return Ok(-1);
+    };
 
-pub fn rmdir(dirs: Vec<String>) -> Result<(), std::io::Error> {
-	/* Similar ro mkdir, if the user type "rmdir", then it should display 
-	an warning and exit with failure */
-	if dirs.is_empty() {
-		println!("rmdir: missing operand");
-		return Err(Error::from(ErrorKind::InvalidInput));
-	};
+    /* Get the directories */
+    let dirs = get_params(args, (2, usize::MAX));
+    
+    let mut error = false;
 
-	/* This is the return value that is gonna be changed if something
-	bad happens */
-	let mut ret_value: Result<(), std::io::Error> = Ok(());
-
-	for dir in dirs {
-		match utils::check_dir(&dir) {
-			Ok(ret) => {
-				match ret {
-					/* Print the message for a path that doesn't exist */
-					utils::PathStatus::IsNot => {
-						println!("rmdir: failed to remove '{}': No such file or \
+    for dir in dirs {
+        match set_path_status(&dir) {
+            Ok(stat) => {
+                match stat {
+                    /* If the path that we want to delete doesn't exist: */
+                    PathStatus::IsNot => {
+                        eprintln!("rmdir: failed to remove '{}': No such file or \
 						directory", dir);
-						ret_value = Err(Error::from(ErrorKind::NotFound));
-					},
-					
-					/* Print the message for a path that points to a file */
-					utils::PathStatus::IsFile => {
-						println!("rmdir: failed to remove '{}': Not a \
+                        error = true;
+                    },
+                    /* If the path that we want to delete is a file: */
+                    PathStatus::IsFile => {
+                        eprintln!("rmdir: failed to remove '{}': Not a \
 						directory", dir);
-						/* It should have been ErrorKind::NotADirectory, but
-						is unstable */
-						ret_value = Err(Error::from(ErrorKind::Other));
-					}
+                        error = true;
+                    }
+                    /* If the path that we want to delete is a directory: */
+                    PathStatus::IsDir => {
+                        match fs::remove_dir(&dir) {
+                            Ok(_) => (),
+                            Err(e) => {
+                                eprintln!("rmdir: unexpected error: {}", e);
+                                error = true;
+                            },
+                        };
+                    },
+                }
+            },
 
-					/* Do the actual removal */
-					utils::PathStatus::IsDir => {
-						match fs::remove_dir(&dir) {
-							Ok(_) => (),
-							Err(e) => {
-								println!("rmdir: failed to remove '{}': \
-								Directory not empty", dir);
-								ret_value = Err(e);
-							},
-						};
-					},
-				};	
-			},
-			
-			Err(e) => {
-				println!("rmdir: unexpected error: {}", e);
-				ret_value = Err(e);
-			}
-		}
-	}
+            Err(e) => {
+                eprintln!("rmdir: unexpected error: {}", e);
+                error = true;
+            }
+        }
+    }
 
-	ret_value
+    if error {
+        return Err(());
+    };
+    
+    Ok(0)
 }

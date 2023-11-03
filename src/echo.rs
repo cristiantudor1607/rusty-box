@@ -1,12 +1,9 @@
 use std::io::{stdout, Write};
-use crate::utils;
+use crate::utils::get_params;
 
-pub fn add_newline(args: &Vec<String>) -> bool {
-    /* args[0] should be the name of the executable 
-       args[1] should be the "echo" command name
-       args[2] can be "-n" option */
-
-    /* If the user type just "echo" */
+fn add_newline(args: &Vec<String>) -> bool {
+    /* If the user types echo, and the press enter, there will be printed just
+    a newline */
     if args.len() == 2 {
         return true;
     };
@@ -18,61 +15,62 @@ pub fn add_newline(args: &Vec<String>) -> bool {
     return true;
 }
 
-pub fn echo(args: &Vec<String>) -> Result<(), std::io::Error> {
-    let newln = add_newline(args);
+pub fn echo(args: &Vec<String>) -> Result<i32, ()> {
+    let newline = add_newline(args);
     let n = args.len();
 
-    /* If the user type just "echo" */
     if n == 2 {
         println!("");
-        return Ok(());
-    };
+        return Ok(0);
+    }
 
-    /* If the user type just "echo -n" */
-    if n == 3 && !newln {
-        return Ok(());
-    };
-    
+    /* If the user types echo -n and then press enter */
+    if n == 3 && newline == false {
+        return Ok(0);
+    }
+
     let items: Vec<String>;
    
 
-    if newln == true {
-        items = utils::extract_params_inrange(&args, 2, usize::MAX);
+    if newline == true {
+        items = get_params(&args, (2, usize::MAX));
     } else {
-        items = utils::extract_params_inrange(&args, 3, usize::MAX);
+        items = get_params(&args, (3, usize::MAX));
     };
 
     /* Method to print inspired by https://doc.rust-lang.org/std/macro.print.html */
     let mut lock = stdout().lock();
 
-    /* I want to use write! macro, and I need to add an extra space before
-    the string, but the first one */
+    /* I want to use write! macro, and I need to add an extra space before each
+    the string, to have spaces between them, but the first one */
     let first = &items[0];
     match write!(lock, "{}", first) {
         Ok(_) => (),
-        Err(e) => return Err(e),
+        Err(e) => {
+            eprintln!("echo: unexpected error: {}", e);
+            return Err(());
+        },
     };
 
-    /* I need a classic iterator to skip the first element in the for loop */
-    let mut i = 0;
-
-    for item in items {
-        if i == 0 {
-            i += 1;
-            continue;
-        };
-
-        match write!(lock, " {}", item) {
+    for i in 1..items.len() {
+        match write!(lock, " {}", items[i]) {
             Ok(_) => (),
-            Err(e) => return Err(e),
+            Err(e) => {
+                eprintln!("echo: unexpected error: {}", e);
+                return Err(());
+            },
         };
     }
 
+    if newline {
+        match write!(lock, "\n") {
+            Ok(_) => (),
+            Err(e) => {
+                eprintln!("echo: unexpected error: {}", e);
+                return Err(());
+            },
+        };
+    };
 
-    if newln {
-        print!("\n");
-    }
-
-    Ok(())
+    Ok(0)
 }
-

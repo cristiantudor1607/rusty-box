@@ -1,8 +1,9 @@
-use std::io::{Error, ErrorKind};
 use std::fs::DirBuilder;
-use crate::utils;
+use crate::utils::PathStatus;
+use crate::utils::get_params;
+use crate::utils::set_path_status;
 
-pub fn create_dir(path: &String) -> Result<(), std::io::Error> {
+pub fn create_newdir(path: &String) -> Result<(), std::io::Error> {
     /* Create the builder */
     let mut builder = DirBuilder::new();
 
@@ -16,51 +17,48 @@ pub fn create_dir(path: &String) -> Result<(), std::io::Error> {
     };
 }
 
-pub fn mkdir(dirs: Vec<String>) -> Result<(), std::io::Error> {
-	
-	/* If the user typed just "mkdir", print a message and throw an error */
-	if dirs.is_empty() {
-        println!("mkdir: missing operand");
-		let custom =	Error::from(ErrorKind::InvalidInput);
-		return Err(custom);
+pub fn mkdir(args: &Vec<String>) -> Result<i32, ()> {
+    /* If the user types just "mkdir", then it is an invalid command */
+    if args.len() == 2 {
+        return Ok(-1);
     };
 
-	/* If all the strings in the dirs Vector are valid paths, the
-	ret value will remain Ok(()). If there is at least one path
-	that already exists, it will be changed to an error */
-    let mut ret: Result<(), std::io::Error> = Ok(());
+    /* Get the directories from the args list */
+    let dirs = get_params(args, (2, usize::MAX));
 
-	for dir in dirs {
-		match utils::check_path(&dir) {
-			Ok(result) => {
-				match result {
-					/* If the path already exists, just print an error and set 
-					the ret variable */
-					true => {
-						println!("mkdir: cannot create directory '{}': File exists", dir);
-						ret = Err(Error::from(ErrorKind::AlreadyExists));
-					},
-					/* If the path doesn't exists, create the directory and
-					check for other errors */
-					false => {
-						match create_dir(&dir) {
-							Ok(_) => (),
+    let mut error: bool = false;
 
-							Err(e) => {
-								println!("mkdir: unexpected error: {}", e);
-								ret = Err(e);
-							},
-						};
-					},
-				};
-			},
-			
-			Err(e) => {
-				println!("mkdir: unexpected error: {}", e);
-				ret = Err(e);
-			},
-		}
-	};
+    for dir in dirs {
+        match set_path_status(&dir) {
+            Ok(stat) => {
+                match stat {
+                    /* If the path is an existing file or directory, set the
+                    error variable and do nothing */
+                    // TODO: add println! with error
+                    PathStatus::IsDir | PathStatus::IsFile => error = true,
+                    /* If the path doesn't exist we can create it */
+                    PathStatus::IsNot => {
+                        match create_newdir(&dir) {
+                            Ok(_) => (),
+                            Err(e) => {
+                                eprintln!("mkdir: unexpected error: {}", e);
+                                error = true;
+                            },
+                        };
+                    },
 
-	ret
+                };
+            },
+            Err(e) => {
+                eprintln!("mkdir: unexpected error: {}", e);
+                error = true;
+            },
+        };      
+    };
+
+    if error {
+        return Err(());
+    };
+
+    Ok(0)
 }
