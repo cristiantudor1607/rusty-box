@@ -1,6 +1,8 @@
+use std::io::Write;
 use std::path::Path;
 use std::fs::File;
 use std::fs;
+use std::fs::OpenOptions;
 use crate::utils::get_string as get_filename;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -59,8 +61,29 @@ fn touch_unexisting(name: &String, o: TouchDateType) -> std::io::Result<bool> {
 }
 
 fn update_acces_time(filename: &String) -> Result<(), std::io::Error>{
-    /* Read the file to modify acces time */
+    /* Open and read to update the acces time */
     match fs::read(filename) {
+        Ok(_) => return Ok(()),
+        Err(e) => {
+            eprintln!("touch: unexpected error: {}", e);
+            return Err(e);
+        },
+    };
+}
+
+fn update_modif_time(filename: &String) -> Result<(), std::io::Error> {
+    /* Open the file */
+    let mut file: File;
+    match OpenOptions::new().write(true).append(true).open(filename) {
+        Ok(ret_file) => file = ret_file,
+        Err(e) => {
+            eprintln!("touch: unexpected error: {}", e);
+            return Err(e);
+        },
+    };
+
+    let byte = 0u8;
+    match file.write_all(&[byte]) {
         Ok(_) => return Ok(()),
         Err(e) => {
             eprintln!("touch: unexpected error: {}", e);
@@ -113,8 +136,22 @@ pub fn touch(args: &Vec<String>) -> Result<i32, ()> {
                 Err(_) => return Err(()),
             };
         },
-        _ => (),
+        TouchDateType::Modify => {
+            match update_modif_time(&filename) {
+                Ok(_) => return Ok(0),
+                Err(_) => return Err(()),
+            };
+        },
+        _ => {
+            match update_acces_time(&filename) {
+                Ok(_) => (),
+                Err(_) => return Err(()),
+            };
+            match update_modif_time(&filename) {
+                Ok(_) => return Ok(0),
+                Err(_) => return Err(()),
+            };
+        },
     };
 
-    Ok(0)
 }

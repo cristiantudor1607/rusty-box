@@ -22,6 +22,10 @@ mod cp;
 use cp::cp as cp;
 mod touch;
 use touch::touch as touch;
+mod chmod;
+use chmod::chmod as chmod;
+mod ls;
+use ls::ls as ls;
 
 
 fn main() {
@@ -129,6 +133,15 @@ fn main() {
             },
 
             Err(_) => exit(-100),
+        },
+        "chmod" => match chmod(&args) {
+            Ok(-1) => { println!("Invalid command"); exit(-1); },
+            Ok(0) => exit(0),
+            _ => exit(-25),
+        },
+        "ls" => match ls(&args) {
+            Ok(0) => exit(0),
+            _ => exit(-80),
         },
         _=> {
             println!("Invalid command");
