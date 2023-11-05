@@ -37,122 +37,87 @@ fn main() {
             pwd();
             exit(0);
         }
+        "echo" => {
+            match echo(&args) {
+                Ok(0) => exit(0),
+                _ => exit(-10),
+            };
+        }
         "cat" => {
             match cat(&args) {
-                Ok(_) => exit(0),
-                Err(_) => exit(-20),
+                Ok(0) => exit(0),
+                _ => exit(-20),
             };
         }
         "mkdir" => {
             match mkdir(&args) {
-                Ok(code) => {
-                    match code {
-                        -1 => {
-                            println!("Invalid command");
-                            exit(-1);
-                        }
-                        0 => exit(0),
-                        _ => (),
-                    };
+                Ok(0) => exit(0),
+                Ok(-1) => {
+                    println!("Invalid command");
+                    exit(-1)
                 }
-                Err(_) => exit(-30),
-            };
-        }
-        "rmdir" => match rmdir(&args) {
-            Ok(code) => {
-                match code {
-                    -1 => {
-                        println!("Invalid command");
-                        exit(-1);
-                    }
-                    0 => exit(0),
-                    _ => (),
-                };
-            }
-            Err(_) => exit(-60),
-        },
-        "echo" => {
-            match echo(&args) {
-                /* In this case the code can only be 0 */
-                Ok(code) => exit(code),
-                Err(_) => exit(-10),
+                _ => exit(-30),
             };
         }
         "mv" => {
             match mv(&args) {
-                Ok(code) => {
-                    match code {
-                        -1 => {
-                            println!("Invalid command");
-                            exit(-1);
-                        }
-                        0 => exit(0),
-                        /* It will never go to this arm */
-                        _ => (),
-                    };
+                Ok(0) => exit(0),
+                Ok(-1) => {
+                    println!("Invalid command");
+                    exit(-1)
                 }
-                Err(_) => exit(-40),
-            };
-        }
-        "rm" => {
-            match rm(&args) {
-                Ok(code) => {
-                    match code {
-                        -1 => {
-                            println!("Invalid command");
-                            exit(-1);
-                        }
-                        0 => exit(0),
-                        _ => (),
-                    };
-                }
-
-                Err(_) => exit(-70),
+                _ => exit(-40),
             };
         }
         "ln" => {
             match ln(&args) {
-                Ok(code) => {
-                    match code {
-                        -1 => {
-                            println!("Invalid command");
-                            exit(-1);
-                        }
-                        0 => exit(0),
-                        _ => (),
-                    };
+                Ok(0) => exit(0),
+                Ok(-1) => {
+                    println!("Invalid command");
+                    exit(-1)
                 }
-                Err(_) => exit(-50),
+                _ => exit(-50),
             };
         }
+        "rmdir" => match rmdir(&args) {
+            Ok(0) => exit(0),
+            Ok(-1) => {
+                println!("Invalid command");
+                exit(-1)
+            }
+            _ => exit(-60),
+        },
+        "rm" => {
+            match rm(&args) {
+                Ok(0) => exit(0),
+                Ok(-1) => {
+                    println!("Invalid command");
+                    exit(-1)
+                }
+                _ => exit(-70),
+            };
+        }
+        "ls" => match ls(&args) {
+            Ok(0) => exit(0),
+            _ => exit(-80),
+        },
         "cp" => {
             match cp(&args) {
-                Ok(code) => {
-                    match code {
-                        -1 => {
-                            println!("Invalid command");
-                            exit(-1);
-                        }
-                        0 => exit(0),
-                        _ => (),
-                    };
+                Ok(0) => exit(0),
+                Ok(-1) => {
+                    println!("Invalid command");
+                    exit(-1)
                 }
-                Err(_) => exit(-90),
+                _ => exit(-90),
             };
         }
         "touch" => match touch(&args) {
-            Ok(code) => {
-                match code {
-                    -1 => {
-                        println!("Invalid command");
-                        exit(-1);
-                    }
-                    0 => exit(0),
-                    _ => (),
-                };
+            Ok(0) => exit(0),
+            Ok(-1) => {
+                println!("Invalid command");
+                exit(-1)
             }
-
-            Err(_) => exit(-100),
+            _ => exit(-100),
         },
         "chmod" => match chmod(&args) {
             Ok(-1) => {
@@ -161,10 +126,6 @@ fn main() {
             }
             Ok(0) => exit(0),
             _ => exit(-25),
-        },
-        "ls" => match ls(&args) {
-            Ok(0) => exit(0),
-            _ => exit(-80),
         },
         "grep" => match grep(&args) {
             Ok(-1) => {

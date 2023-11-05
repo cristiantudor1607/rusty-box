@@ -42,10 +42,10 @@ fn print_matching_lines(
                 {
                     println!("{}", text);
                 }
-            },
+            }
             Err(_) => return Err(Error::Syntax(String::from("Unknown"))),
         };
-    };
+    }
 
     Ok(())
 }

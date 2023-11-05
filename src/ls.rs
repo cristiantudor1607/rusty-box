@@ -43,9 +43,12 @@ fn get_listing_type(args: &Vec<String>) -> ListingType {
 fn get_pathname(args: &Vec<String>, lstype: ListingType) -> Result<String, std::io::Error> {
     let n = args.len();
 
-    /* If the command has at least one option and a file/directoy
-    specified or it has no options and a directory */
-    if (lstype != ListingType::Default && n > 3) || (lstype == ListingType::Default && n == 3) {
+    /* If the command has at least one option and a file/directoy specified or it has
+    no options and a file/directory specified */
+    if (lstype != ListingType::RecursiveAll && n == 4)
+        || (lstype == ListingType::Default && n == 3)
+        || (lstype == ListingType::RecursiveAll && n == 5)
+    {
         return Ok(args[n - 1].clone());
     };
 
@@ -132,13 +135,12 @@ fn recursive_listing(pathname: &String, lstype: ListingType) -> Result<(), Error
         Err(e) => return Err(e),
     };
 
-    println!("./{}:", pathname);
+    println!("{}:", pathname);
     if lstype == ListingType::RecursiveAll {
         println!(".");
         println!("..");
     };
 
-    /* Check for possible entries in directory, or errors */
     for pos_entry in curr_dir {
         let entry: DirEntry;
         match pos_entry {
@@ -152,7 +154,7 @@ fn recursive_listing(pathname: &String, lstype: ListingType) -> Result<(), Error
             None => return Err(Error::from(ErrorKind::Other)),
         };
 
-        println!("{}", name);
+        println!("{}", get_relative_path(&name));
         match recursive_listing(&name, lstype.clone()) {
             Ok(_) => (),
             Err(e) => return Err(e),
