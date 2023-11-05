@@ -1,7 +1,7 @@
-use std::fs::DirBuilder;
-use crate::utils::PathStatus;
 use crate::utils::get_params;
 use crate::utils::set_path_status;
+use crate::utils::PathStatus;
+use std::fs::DirBuilder;
 
 pub fn create_newdir(path: &String) -> Result<(), std::io::Error> {
     /* Create the builder */
@@ -10,10 +10,10 @@ pub fn create_newdir(path: &String) -> Result<(), std::io::Error> {
     /* Set recursive field to true */
     builder.recursive(true);
 
-	/* Create the new directory */
-    match builder.create (path) {
+    /* Create the new directory */
+    match builder.create(path) {
         Ok(_) => return Ok(()),
-		Err(e) => return Err(e),
+        Err(e) => return Err(e),
     };
 }
 
@@ -43,18 +43,17 @@ pub fn mkdir(args: &Vec<String>) -> Result<i32, ()> {
                             Err(e) => {
                                 eprintln!("mkdir: unexpected error: {}", e);
                                 error = true;
-                            },
+                            }
                         };
-                    },
-
+                    }
                 };
-            },
+            }
             Err(e) => {
                 eprintln!("mkdir: unexpected error: {}", e);
                 error = true;
-            },
-        };      
-    };
+            }
+        };
+    }
 
     if error {
         return Err(());

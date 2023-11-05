@@ -1,9 +1,9 @@
+use crate::utils::get_string as get_filename;
+use std::fs;
+use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
-use std::fs::File;
-use std::fs;
-use std::fs::OpenOptions;
-use crate::utils::get_string as get_filename;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TouchDateType {
@@ -15,7 +15,7 @@ pub enum TouchDateType {
 
 fn which_date(args: &Vec<String>) -> Option<TouchDateType> {
     let mut date = TouchDateType::Create;
-    
+
     /* Check for options */
     match args[2].as_str() {
         "-a" => date = TouchDateType::Access,
@@ -24,7 +24,7 @@ fn which_date(args: &Vec<String>) -> Option<TouchDateType> {
         _ => (),
     };
 
-    /* If it finds an option, but the command is like 
+    /* If it finds an option, but the command is like
     "rustybox touch -c", then it is an invalid command */
     if date != TouchDateType::Create && args.len() == 3 {
         return None;
@@ -44,30 +44,30 @@ fn touch_unexisting(name: &String, o: TouchDateType) -> std::io::Result<bool> {
                     Err(e) => {
                         eprintln!("touch: unexpected error: {}", e);
                         return Err(e);
-                    },
+                    }
                 };
             } else if status == false && o == TouchDateType::NoCreate {
                 return Ok(true);
             };
-        },
+        }
         /* Throw the error */
         Err(e) => {
             eprintln!("touch: unexpected error: {}", e);
             return Err(e);
-        },
+        }
     };
 
     Ok(false)
 }
 
-fn update_acces_time(filename: &String) -> Result<(), std::io::Error>{
+fn update_acces_time(filename: &String) -> Result<(), std::io::Error> {
     /* Open and read to update the acces time */
     match fs::read(filename) {
         Ok(_) => return Ok(()),
         Err(e) => {
             eprintln!("touch: unexpected error: {}", e);
             return Err(e);
-        },
+        }
     };
 }
 
@@ -79,7 +79,7 @@ fn update_modif_time(filename: &String) -> Result<(), std::io::Error> {
         Err(e) => {
             eprintln!("touch: unexpected error: {}", e);
             return Err(e);
-        },
+        }
     };
 
     let byte = 0u8;
@@ -88,7 +88,7 @@ fn update_modif_time(filename: &String) -> Result<(), std::io::Error> {
         Err(e) => {
             eprintln!("touch: unexpected error: {}", e);
             return Err(e);
-        },
+        }
     };
 }
 
@@ -116,7 +116,7 @@ pub fn touch(args: &Vec<String>) -> Result<i32, ()> {
     };
     match get_filename(args, index) {
         Some(name) => filename = name,
-        None => return  Err(()),
+        None => return Err(()),
     };
 
     /* If the file doesn't exists, create it, unless the NoCreate flag is set */
@@ -125,23 +125,23 @@ pub fn touch(args: &Vec<String>) -> Result<i32, ()> {
             if ret == true {
                 return Ok(0);
             };
-        },
+        }
         Err(_) => return Err(()),
     };
-    
+
     match opt {
         TouchDateType::Access => {
             match update_acces_time(&filename) {
                 Ok(_) => return Ok(0),
                 Err(_) => return Err(()),
             };
-        },
+        }
         TouchDateType::Modify => {
             match update_modif_time(&filename) {
                 Ok(_) => return Ok(0),
                 Err(_) => return Err(()),
             };
-        },
+        }
         _ => {
             match update_acces_time(&filename) {
                 Ok(_) => (),
@@ -151,7 +151,6 @@ pub fn touch(args: &Vec<String>) -> Result<i32, ()> {
                 Ok(_) => return Ok(0),
                 Err(_) => return Err(()),
             };
-        },
+        }
     };
-
 }

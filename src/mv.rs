@@ -1,9 +1,7 @@
-use std::fs::rename;
 use crate::utils::{get_string, set_path_status, PathStatus};
-
+use std::fs::rename;
 
 pub fn mv(args: &Vec<String>) -> Result<i32, ()> {
-    
     let src: String;
     let target: String;
 
@@ -24,7 +22,7 @@ pub fn mv(args: &Vec<String>) -> Result<i32, ()> {
                 PathStatus::IsNot => {
                     eprintln!("mv: cannor stat '{}': No such file or directory", src);
                     return Err(());
-                },
+                }
                 _ => {
                     // TODO: verifica daca trebuie sa concatenezi ceva la destinatie
                     match rename(src, target) {
@@ -32,15 +30,14 @@ pub fn mv(args: &Vec<String>) -> Result<i32, ()> {
                         Err(e) => {
                             eprintln!("mv: unexpected error: {}", e);
                             return Err(());
-                        },
+                        }
                     };
-                },
+                }
             };
-        },
+        }
         Err(e) => {
             eprintln!("mv: unexpected error: {}", e);
             return Err(());
-        },
+        }
     };
-
 }

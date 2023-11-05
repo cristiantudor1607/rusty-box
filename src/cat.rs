@@ -1,13 +1,12 @@
+use std::fs::File;
 use std::io;
 use std::io::BufReader;
 use std::io::Lines;
-use std::fs::File;
 use std::usize;
 
 use crate::utils;
 use crate::utils::open_file;
 use crate::utils::read_file;
-
 
 fn typing_loop() {
     loop {
@@ -22,7 +21,7 @@ fn typing_loop() {
                 break;
             }
         }
-    };
+    }
 }
 
 fn print_contents(buffer: Lines<BufReader<File>>) -> Result<(), std::io::Error> {
@@ -39,7 +38,7 @@ fn print_contents(buffer: Lines<BufReader<File>>) -> Result<(), std::io::Error> 
     Ok(())
 }
 
-pub fn cat(args: &Vec<String>) -> Result<i32, ()>{
+pub fn cat(args: &Vec<String>) -> Result<i32, ()> {
     /* If the user types "cat" in terminal it enters in an infinte loop, where
     you can type strings, and after \n is pressed, the strings are printed on
     the next line */
@@ -49,8 +48,8 @@ pub fn cat(args: &Vec<String>) -> Result<i32, ()>{
 
     /* Get the filenames */
     let files = utils::get_params(args, (2, usize::MAX));
-    
-    /* If one of the files doesn't exist, the code will be set to false, and 
+
+    /* If one of the files doesn't exist, the code will be set to false, and
     the function will drop an error at the end, after printing the contents of
     the existing files */
     let mut code: bool = true;
@@ -64,13 +63,13 @@ pub fn cat(args: &Vec<String>) -> Result<i32, ()>{
                     Ok(_) => (),
                     Err(_) => code = false,
                 };
-            },
+            }
             Err(e) => {
                 eprintln!("cat: unexpected error: {}", e);
                 code = false;
             }
         }
-    };
+    }
 
     if !code {
         return Err(());

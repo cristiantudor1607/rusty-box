@@ -1,11 +1,11 @@
 use std::fs;
-use std::fs::{ReadDir, read_dir};
+use std::fs::{read_dir, ReadDir};
 use std::io::{self, Error, ErrorKind};
 
+use crate::mkdir::create_newdir;
+use crate::utils::get_string;
 use crate::utils::set_path_status as set_entry_type;
 use crate::utils::PathStatus as EntryType;
-use crate::utils::get_string;
-use crate::mkdir::create_newdir;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum CpOption {
@@ -16,7 +16,7 @@ pub enum CpOption {
 fn cpget_option(args: &Vec<String>) -> CpOption {
     /* The option should be at index 2 */
     let opt = &args[2];
-    if opt == "-r" || opt == "-R" || opt =="--recursive" {
+    if opt == "-r" || opt == "-R" || opt == "--recursive" {
         return CpOption::Recursive;
     };
 
@@ -49,13 +49,13 @@ fn cpget_newname(from: &String, to: &String) -> String {
 
 fn cpparse_dest(src: &String, dest: &String) -> Option<String> {
     let dest_type: EntryType;
-    
+
     match set_entry_type(dest) {
         Ok(ret) => dest_type = ret,
         Err(e) => {
             eprintln!("cp: unexpected error: {}", e);
             return None;
-        },
+        }
     };
 
     if dest_type == EntryType::IsNot {
@@ -69,7 +69,7 @@ fn cpparse_dest(src: &String, dest: &String) -> Option<String> {
     /* If dest is a directory, then it should be renamed directory/src, but
     not all of src, just the last name after a '/' */
     let words: Vec<&str> = src.split("/").collect();
-    
+
     /* If the dest has a "/" at the end, it should use the last but one */
     let s = match words[words.len() - 1] {
         "" => words[words.len() - 2],
@@ -89,9 +89,7 @@ fn cpparse_dest(src: &String, dest: &String) -> Option<String> {
     new_name.push_str(s);
 
     return Some(new_name);
-
 }
-
 
 fn copy_dir(from: &String, to: &String) -> io::Result<()> {
     /* Base case: When it reaches a file */
@@ -112,10 +110,8 @@ fn copy_dir(from: &String, to: &String) -> io::Result<()> {
                     /* Otherwise, return from the recursion with an error */
                     Err(e) => return Err(e),
                 };
-
             };
-
-        },
+        }
     };
 
     /* Load the directory */
@@ -132,7 +128,7 @@ fn copy_dir(from: &String, to: &String) -> io::Result<()> {
 
         /* Create the new name for the file */
         let filename: String;
-        
+
         match item.path().to_str() {
             Some(name) => filename = name.to_string(),
             None => return Err(Error::from(ErrorKind::Other)),
@@ -152,10 +148,9 @@ fn copy_dir(from: &String, to: &String) -> io::Result<()> {
             Ok(_) => (),
             Err(e) => return Err(e),
         };
-    };
+    }
 
     Ok(())
-  
 }
 
 pub fn cp(args: &Vec<String>) -> Result<i32, ()> {
@@ -192,7 +187,7 @@ pub fn cp(args: &Vec<String>) -> Result<i32, ()> {
                 /* Same as above */
                 None => return Err(()),
             };
-        },
+        }
 
         CpOption::Recursive => {
             match get_string(args, 3) {
@@ -206,16 +201,16 @@ pub fn cp(args: &Vec<String>) -> Result<i32, ()> {
                 /* Return something irrelevant */
                 None => return Err(()),
             };
-        },
+        }
     };
 
     let src_type: EntryType;
     match set_entry_type(&src) {
-        Ok(t) => src_type= t,
+        Ok(t) => src_type = t,
         Err(e) => {
             eprintln!("cp: unexpected error: {}", e);
             return Err(());
-        },
+        }
     };
 
     /* If the src isn't in the filesystem, cp stops here */
@@ -238,13 +233,13 @@ pub fn cp(args: &Vec<String>) -> Result<i32, ()> {
                 Ok(_) => return Ok(0),
                 Err(_) => return Err(()),
             };
-        },
+        }
         EntryType::IsDir => {
             if opt == CpOption::NonRecursive {
                 eprintln!("cp: -r not specified; omitting directory '{}'", src);
                 return Err(());
             };
-            
+
             /* Create the copy of the root source directory in the destination
             directory */
             match create_newdir(&name) {
@@ -252,7 +247,7 @@ pub fn cp(args: &Vec<String>) -> Result<i32, ()> {
                 Err(e) => {
                     println!("cp: unexpected error: {}", e);
                     return Err(());
-                },
+                }
             };
 
             match copy_dir(&src, &name) {
@@ -262,9 +257,9 @@ pub fn cp(args: &Vec<String>) -> Result<i32, ()> {
                     return Err(());
                 }
             }
-        },
+        }
         _ => (),
     };
-    
+
     Ok(0)
 }

@@ -1,6 +1,6 @@
-use std::io::{Error, ErrorKind};
-use std::fs::{ReadDir, read_dir};
 use std::fs::DirEntry;
+use std::fs::{read_dir, ReadDir};
+use std::io::{Error, ErrorKind};
 use std::path::Path;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -25,31 +25,27 @@ fn get_listing_type(args: &Vec<String>) -> ListingType {
                 } else {
                     lstype = ListingType::All;
                 };
-            },
+            }
             "-R" | "-recursive" => {
                 if lstype == ListingType::All {
                     lstype = ListingType::RecursiveAll;
                 } else {
                     lstype = ListingType::Recursive;
                 };
-            },
+            }
             _ => (),
-
         };
-    };
+    }
 
     return lstype;
 }
 
-fn get_pathname(args: &Vec<String>, lstype: ListingType) -> 
-                Result<String, std::io::Error> {
-
+fn get_pathname(args: &Vec<String>, lstype: ListingType) -> Result<String, std::io::Error> {
     let n = args.len();
 
-    /* If the command has at least one option and a file/directoy 
+    /* If the command has at least one option and a file/directoy
     specified or it has no options and a directory */
-    if (lstype != ListingType::Default && n > 3) || 
-        (lstype == ListingType::Default && n == 3) {
+    if (lstype != ListingType::Default && n > 3) || (lstype == ListingType::Default && n == 3) {
         return Ok(args[n - 1].clone());
     };
 
@@ -59,10 +55,10 @@ fn get_pathname(args: &Vec<String>, lstype: ListingType) ->
                 Some(name) => return Ok(name.to_string()),
                 None => return Err(Error::from(ErrorKind::Other)),
             };
-        },
+        }
 
         Err(e) => return Err(e),
-    };            
+    };
 }
 
 fn get_relative_path(abosulte: &String) -> String {
@@ -75,7 +71,10 @@ fn get_relative_path(abosulte: &String) -> String {
 fn default_listing(pathname: &String, lstype: ListingType) -> Result<(), Error> {
     /* Check if the path is a file */
     match Path::new(pathname).is_file() {
-        true => { println!("{}", pathname); return Ok(())},
+        true => {
+            println!("{}", pathname);
+            return Ok(());
+        }
         false => (),
     };
 
@@ -101,12 +100,12 @@ fn default_listing(pathname: &String, lstype: ListingType) -> Result<(), Error> 
         let name: String;
         match entry.path().to_str() {
             Some(n) => name = n.to_string(),
-            None => return Err(Error::from(ErrorKind::Other)), 
+            None => return Err(Error::from(ErrorKind::Other)),
         };
 
         /* Get the relative path */
         let realtive_name = get_relative_path(&name);
-    
+
         /* Split the name into characters */
         let word: Vec<char> = realtive_name.chars().collect();
         if word[0] == '.' && lstype != ListingType::All {
@@ -115,43 +114,85 @@ fn default_listing(pathname: &String, lstype: ListingType) -> Result<(), Error> 
 
         /* Print the name */
         println!("{}", realtive_name);
+    }
 
-        match lstype {
-            /* Look only for recursive types */
-            ListingType::Recursive | ListingType::RecursiveAll => {
-                match default_listing(&name, lstype.clone()) {
-                    Ok(_) => (),
-                    Err(e) => return Err(e),
-                };
-            },
-            /* Don't care about other options */
-            _ => (),
+    Ok(())
+}
+
+fn recursive_listing(pathname: &String, lstype: ListingType) -> Result<(), Error> {
+    /* If pathname is a file, return from recursion */
+    match Path::new(pathname).is_file() {
+        true => return Ok(()),
+        false => (),
+    };
+
+    let curr_dir: ReadDir;
+    match read_dir(pathname) {
+        Ok(d) => curr_dir = d,
+        Err(e) => return Err(e),
+    };
+
+    println!("./{}:", pathname);
+    if lstype == ListingType::RecursiveAll {
+        println!(".");
+        println!("..");
+    };
+
+    /* Check for possible entries in directory, or errors */
+    for pos_entry in curr_dir {
+        let entry: DirEntry;
+        match pos_entry {
+            Ok(direntry) => entry = direntry,
+            Err(e) => return Err(e),
         };
 
+        let name: String;
+        match entry.path().to_str() {
+            Some(n) => name = n.to_string(),
+            None => return Err(Error::from(ErrorKind::Other)),
+        };
+
+        println!("{}", name);
+        match recursive_listing(&name, lstype.clone()) {
+            Ok(_) => (),
+            Err(e) => return Err(e),
+        };
     }
-    
+
     Ok(())
 }
 
 pub fn ls(args: &Vec<String>) -> Result<i32, ()> {
     let lstype = get_listing_type(args);
-    
+
     let pathname: String;
     match get_pathname(args, lstype.clone()) {
         Ok(name) => pathname = name,
         Err(e) => {
             eprintln!("ls: unexpected error: {}", e);
             return Err(());
-        },
+        }
     };
 
-    
-    match default_listing(&pathname, lstype) {
-        Ok(_) => return Ok(0),
-        Err(e) => {
-            eprintln!("ls: unexpected error: {}", e);
-            return Err(());
-        },
+    match lstype {
+        ListingType::Default | ListingType::All => {
+            match default_listing(&pathname, lstype) {
+                Ok(_) => return Ok(0),
+                Err(e) => {
+                    eprintln!("ls: unexpected error: {}", e);
+                    return Err(());
+                }
+            };
+        }
+
+        ListingType::Recursive | ListingType::RecursiveAll => {
+            match recursive_listing(&pathname, lstype) {
+                Ok(_) => return Ok(0),
+                Err(e) => {
+                    eprintln!("ls: unexpected error: {}", e);
+                    return Err(());
+                }
+            };
+        }
     };
-    
 }

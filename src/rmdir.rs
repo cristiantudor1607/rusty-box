@@ -1,17 +1,17 @@
-use std::fs;
 use crate::utils::get_params;
-use crate::utils::PathStatus;
 use crate::utils::set_path_status;
+use crate::utils::PathStatus;
+use std::fs;
 
 pub fn rmdir(args: &Vec<String>) -> Result<i32, ()> {
     /* If the user types rustybox rmdir */
-    if  args.len() == 2 {
+    if args.len() == 2 {
         return Ok(-1);
     };
 
     /* Get the directories */
     let dirs = get_params(args, (2, usize::MAX));
-    
+
     let mut error = false;
 
     for dir in dirs {
@@ -20,14 +20,20 @@ pub fn rmdir(args: &Vec<String>) -> Result<i32, ()> {
                 match stat {
                     /* If the path that we want to delete doesn't exist: */
                     PathStatus::IsNot => {
-                        eprintln!("rmdir: failed to remove '{}': No such file or \
-						directory", dir);
+                        eprintln!(
+                            "rmdir: failed to remove '{}': No such file or \
+						directory",
+                            dir
+                        );
                         error = true;
-                    },
+                    }
                     /* If the path that we want to delete is a file: */
                     PathStatus::IsFile => {
-                        eprintln!("rmdir: failed to remove '{}': Not a \
-						directory", dir);
+                        eprintln!(
+                            "rmdir: failed to remove '{}': Not a \
+						directory",
+                            dir
+                        );
                         error = true;
                     }
                     /* If the path that we want to delete is a directory: */
@@ -37,11 +43,11 @@ pub fn rmdir(args: &Vec<String>) -> Result<i32, ()> {
                             Err(e) => {
                                 eprintln!("rmdir: unexpected error: {}", e);
                                 error = true;
-                            },
+                            }
                         };
-                    },
+                    }
                 }
-            },
+            }
 
             Err(e) => {
                 eprintln!("rmdir: unexpected error: {}", e);
@@ -53,6 +59,6 @@ pub fn rmdir(args: &Vec<String>) -> Result<i32, ()> {
     if error {
         return Err(());
     };
-    
+
     Ok(0)
 }

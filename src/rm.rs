@@ -1,10 +1,9 @@
-use std::fs::{remove_file, remove_dir, remove_dir_all};
+use std::fs::{remove_dir, remove_dir_all, remove_file};
 use std::io::{Error, ErrorKind};
 
 use crate::utils::get_params as get_names;
 use crate::utils::set_path_status as set_entry_type;
 use crate::utils::PathStatus as EntryType;
-
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum RmOption {
@@ -15,10 +14,9 @@ pub enum RmOption {
 }
 
 fn rmset_options(args: &Vec<String>) -> RmOption {
-    
     /* Set the return value to implicit option */
     let mut ret = RmOption::OnlyFiles;
-    
+
     // TODO: Reduce searching to first items in vector
     for arg in args {
         let item = arg.as_str();
@@ -30,7 +28,7 @@ fn rmset_options(args: &Vec<String>) -> RmOption {
                 } else {
                     ret = RmOption::EmptyDirs;
                 };
-            },
+            }
             "-r" | "-R" | "--recursive" => {
                 /* If the option was previously set to EmptyDirs, set to All */
                 if ret == RmOption::EmptyDirs {
@@ -38,10 +36,10 @@ fn rmset_options(args: &Vec<String>) -> RmOption {
                 } else {
                     ret = RmOption::Recursive;
                 };
-            },
+            }
             _ => (),
         };
-    };
+    }
 
     ret
 }
@@ -62,14 +60,13 @@ fn check_rmargs(args: &Vec<String>) -> bool {
 
     /* Count the number of options */
     let mut opt_counter = 0;
-    
+
     for arg in args {
         match arg.as_str() {
-            "-d" | "--dir" | "-r" | "-R" | "--recursive" =>
-                opt_counter += 1,
+            "-d" | "--dir" | "-r" | "-R" | "--recursive" => opt_counter += 1,
             _ => (),
         };
-    };
+    }
 
     if n == 3 && opt_counter == 1 {
         return false;
@@ -89,7 +86,7 @@ fn delete_dir(name: &String, opt: &RmOption) -> Result<(), std::io::Error> {
         RmOption::OnlyFiles => {
             eprintln!("rm: cannot remove '{}': Is a directory", name);
             return Err(Error::from(ErrorKind::Other));
-        },
+        }
         /* If the option is EmptyDirs, it should call the remove_dir function,
         to delete just the empty directors */
         RmOption::EmptyDirs => {
@@ -98,9 +95,9 @@ fn delete_dir(name: &String, opt: &RmOption) -> Result<(), std::io::Error> {
                 Err(e) => {
                     eprintln!("rm: cannot remove '{}': Directory not empty", name);
                     return Err(e);
-                },
+                }
             };
-        },
+        }
         /* If the option is Recursive or All, it should call the remove_dir_all
         function, to delete everything */
         RmOption::Recursive | RmOption::All => {
@@ -109,12 +106,12 @@ fn delete_dir(name: &String, opt: &RmOption) -> Result<(), std::io::Error> {
                 Err(e) => {
                     eprintln!("rm: unexpected error: {}", e);
                     return Err(e);
-                },
+                }
             };
-        },
+        }
     };
 
-    Ok(())   
+    Ok(())
 }
 
 pub fn rm(args: &Vec<String>) -> Result<i32, ()> {
@@ -123,7 +120,7 @@ pub fn rm(args: &Vec<String>) -> Result<i32, ()> {
         /* Return an invalid command */
         return Ok(-1);
     }
-    
+
     /* Set the options */
     let opt = rmset_options(args);
     let names: Vec<String>;
@@ -131,16 +128,13 @@ pub fn rm(args: &Vec<String>) -> Result<i32, ()> {
     match opt {
         /* If there are no options, the names starts with the 3rd string in
         list (at index 2) */
-        RmOption::OnlyFiles =>
-            names = get_names(args, (2, usize::MAX)),
+        RmOption::OnlyFiles => names = get_names(args, (2, usize::MAX)),
         /* If there is an option, the names starts with the 4th string in
         list (at index 3) */
-        RmOption::Recursive | RmOption::EmptyDirs =>
-            names = get_names(args, (3, usize::MAX)),
+        RmOption::Recursive | RmOption::EmptyDirs => names = get_names(args, (3, usize::MAX)),
         /* If there are 2 options, the names starts with the 5th string in
         list (at index 4) */
-        RmOption::All => 
-            names = get_names(args, (4, usize::MAX)),
+        RmOption::All => names = get_names(args, (4, usize::MAX)),
     };
 
     /* Variable to remember if there was an error at some point, while
@@ -153,7 +147,7 @@ pub fn rm(args: &Vec<String>) -> Result<i32, ()> {
             Ok(EntryType::IsNot) => {
                 eprintln!("rm: cannot remove '{}': No such file or directory", name);
                 error = true;
-            },
+            }
             /* If the entry is a file, we can delete it, no matter the options */
             Ok(EntryType::IsFile) => {
                 match remove_file(&name) {
@@ -161,9 +155,9 @@ pub fn rm(args: &Vec<String>) -> Result<i32, ()> {
                     Err(e) => {
                         eprintln!("rm: unexpected error: {}", e);
                         error = true;
-                    },
+                    }
                 };
-            },
+            }
             /* If the entry is a directory, the deletion depends on the options
             provided */
             Ok(EntryType::IsDir) => {
@@ -173,7 +167,7 @@ pub fn rm(args: &Vec<String>) -> Result<i32, ()> {
                     function */
                     Err(_) => error = true,
                 }
-            },
+            }
 
             /* Other errors */
             Err(e) => {
@@ -181,7 +175,7 @@ pub fn rm(args: &Vec<String>) -> Result<i32, ()> {
                 error = true;
             }
         };
-    };
+    }
 
     if error {
         return Err(());

@@ -1,4 +1,4 @@
-use std::fs::{File, Metadata, set_permissions};
+use std::fs::{set_permissions, File, Metadata};
 use std::os::unix::fs::PermissionsExt;
 
 use crate::utils::get_string as get_filename;
@@ -17,13 +17,13 @@ pub enum ChmodType {
 }
 
 fn octal_to_u32(octal: u32) -> u32 {
-    return (octal % 10) * 1 + ((octal / 10 ) % 10) * 8 + ((octal / 100) % 10) * 64;
+    return (octal % 10) * 1 + ((octal / 10) % 10) * 8 + ((octal / 100) % 10) * 64;
 }
 
 fn set_users(args: &Vec<String>) -> Option<Vec<UserType>> {
     /* Split the 3rd argument to chars */
     let w: Vec<_> = args[2].chars().collect();
-    
+
     /* Create a vector to add users in it */
     let mut ret: Vec<UserType> = Vec::new();
 
@@ -41,7 +41,7 @@ fn set_users(args: &Vec<String>) -> Option<Vec<UserType>> {
             'a' => ret.push(UserType::ForAll),
             _ => (),
         };
-    };
+    }
 
     /* If the return vector is empty, then w should contain only r, w, and x */
     if ret.is_empty() {
@@ -112,19 +112,18 @@ fn get_updated_perms(old_perms: &u32, diff: &u32, op: &ChmodType) -> u32 {
             } else {
                 return old_perms + diff;
             };
-        },
+        }
         ChmodType::Del => {
             if old_perms <= diff {
                 return 0o0;
             } else {
                 return old_perms - diff;
             };
-        },
+        }
     }
 }
 
-fn get_new_perms(old_perms: u32, diff: u32, users: Vec<UserType>,
-                 op: ChmodType) -> u32 {
+fn get_new_perms(old_perms: u32, diff: u32, users: Vec<UserType>, op: ChmodType) -> u32 {
     let mut total: u32 = old_perms;
     for user in users {
         let mut new_perms = 0o0;
@@ -151,13 +150,12 @@ fn get_new_perms(old_perms: u32, diff: u32, users: Vec<UserType>,
         } else {
             new_perms += total % 8;
         };
-        
+
         total = new_perms;
-    };
+    }
 
     return total;
 }
-
 
 pub fn get_metadata(filename: &String) -> Result<Metadata, std::io::Error> {
     /* Open the file */
@@ -178,7 +176,7 @@ pub fn get_metadata(filename: &String) -> Result<Metadata, std::io::Error> {
 }
 
 /* Method taken from: https://doc.rust-lang.org/std/os/unix/fs/trait.PermissionsExt.html */
-fn set_perm(filename: &String, perms: u32) -> Result<(), std::io::Error>{
+fn set_perm(filename: &String, perms: u32) -> Result<(), std::io::Error> {
     /* Get the metadata of the file */
     let metadata: Metadata;
     match get_metadata(filename) {
@@ -194,7 +192,6 @@ fn set_perm(filename: &String, perms: u32) -> Result<(), std::io::Error>{
         Ok(_) => return Ok(()),
         Err(e) => return Err(e),
     };
-
 }
 
 pub fn chmod(args: &Vec<String>) -> Result<i32, ()> {
@@ -218,12 +215,12 @@ pub fn chmod(args: &Vec<String>) -> Result<i32, ()> {
                     input_perms = p;
                     /* Initialize users with an empty vector */
                     users = Vec::new();
-                },
+                }
                 /* If the input can't be converted to a number, then it is an
                 invalid command */
                 Err(_) => return Ok(-1),
             };
-        },
+        }
     };
 
     /* If users is empty, then the provided format is a numeric format */
@@ -235,7 +232,7 @@ pub fn chmod(args: &Vec<String>) -> Result<i32, ()> {
             Err(e) => {
                 eprintln!("chmod: unexpected error: {}", e);
                 return Err(());
-            },
+            }
         };
     };
 
@@ -245,7 +242,7 @@ pub fn chmod(args: &Vec<String>) -> Result<i32, ()> {
         Err(e) => {
             eprintln!("chmod: unexpected error: {}", e);
             return Err(());
-        },
+        }
     };
     /* Get the wanted permissions as a number */
     let diff = get_wanted_perms(args);
@@ -261,7 +258,6 @@ pub fn chmod(args: &Vec<String>) -> Result<i32, ()> {
         Err(e) => {
             println!("chmod : unexpected error: {}", e);
             return Err(());
-        },
+        }
     };
-
 }

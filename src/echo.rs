@@ -1,5 +1,5 @@
-use std::io::{stdout, Write};
 use crate::utils::get_params;
+use std::io::{stdout, Write};
 
 fn add_newline(args: &Vec<String>) -> bool {
     /* If the user types echo, and the press enter, there will be printed just
@@ -30,7 +30,6 @@ pub fn echo(args: &Vec<String>) -> Result<i32, ()> {
     }
 
     let items: Vec<String>;
-   
 
     if newline == true {
         items = get_params(&args, (2, usize::MAX));
@@ -49,7 +48,7 @@ pub fn echo(args: &Vec<String>) -> Result<i32, ()> {
         Err(e) => {
             eprintln!("echo: unexpected error: {}", e);
             return Err(());
-        },
+        }
     };
 
     for i in 1..items.len() {
@@ -58,7 +57,7 @@ pub fn echo(args: &Vec<String>) -> Result<i32, ()> {
             Err(e) => {
                 eprintln!("echo: unexpected error: {}", e);
                 return Err(());
-            },
+            }
         };
     }
 
@@ -68,7 +67,7 @@ pub fn echo(args: &Vec<String>) -> Result<i32, ()> {
             Err(e) => {
                 eprintln!("echo: unexpected error: {}", e);
                 return Err(());
-            },
+            }
         };
     };
 

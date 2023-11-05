@@ -51,7 +51,7 @@ pub fn ln(args: &Vec<String>) -> Result<i32, ()> {
             match get_string(args, 2) {
                 Some(s) => src = s,
                 /* It won't return None, because the args were already verified,
-                but I have to return something, because the compiler will later 
+                but I have to return something, because the compiler will later
                 think I use src and name uninitialized */
                 None => return Ok(1),
             };
@@ -61,7 +61,7 @@ pub fn ln(args: &Vec<String>) -> Result<i32, ()> {
                 /* Same as above */
                 None => return Ok(1),
             };
-        },
+        }
 
         LinkType::SoftLink => {
             match get_string(args, 3) {
@@ -73,7 +73,7 @@ pub fn ln(args: &Vec<String>) -> Result<i32, ()> {
                 Some(s) => name = s,
                 None => return Ok(1),
             };
-        },
+        }
     }
 
     /* Now, let's create the link */
@@ -85,9 +85,9 @@ pub fn ln(args: &Vec<String>) -> Result<i32, ()> {
                 Err(e) => {
                     eprintln!("ln: unexpected error: {}", e);
                     return Err(());
-                },
+                }
             };
-        },
+        }
         LinkType::SoftLink => {
             /* The compiler suggested to use symlink istead oh soft_link */
             match symlink(src, name) {
@@ -95,9 +95,8 @@ pub fn ln(args: &Vec<String>) -> Result<i32, ()> {
                 Err(e) => {
                     eprintln!("ln: unexpected error: {}", e);
                     return Err(());
-                },
+                }
             };
-        },
+        }
     };
-
 }

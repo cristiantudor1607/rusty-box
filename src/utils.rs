@@ -1,7 +1,7 @@
-use std::io::{Lines, BufReader, BufRead};
-use std::usize;
 use std::fs::File;
+use std::io::{BufRead, BufReader, Lines};
 use std::path::Path;
+use std::usize;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PathStatus {
@@ -12,14 +12,14 @@ pub enum PathStatus {
 
 pub fn set_path_status(path: &String) -> Result<PathStatus, std::io::Error> {
     let path_struc = Path::new(path);
-    
+
     match path_struc.try_exists() {
         Ok(ret) => {
             /* Test if the path doesn't exist */
             if ret == false {
                 return Ok(PathStatus::IsNot);
             };
-        },
+        }
         /* Check for unexpected errors */
         Err(e) => return Err(e),
     };
@@ -37,12 +37,12 @@ pub fn open_file(filename: &String) -> Result<File, std::io::Error> {
         Err(e) => {
             eprintln!("unexpected error: {}", e);
             return Err(e);
-        },
+        }
     };
 }
 
 pub fn read_file(file: File) -> Lines<BufReader<File>> {
-    return  BufReader::new(file).lines();
+    return BufReader::new(file).lines();
 }
 
 pub fn get_params(args: &Vec<String>, range: (usize, usize)) -> Vec<String> {
@@ -51,7 +51,7 @@ pub fn get_params(args: &Vec<String>, range: (usize, usize)) -> Vec<String> {
 
     /* If the upper bound parameter is the MAX size for usize, we want to
     get all the elements of the Vector, starting with lower bound index
-    and ending with the last element of the Vector */ 
+    and ending with the last element of the Vector */
     if sup == usize::MAX {
         /* Use clone to avoid making changes to the original Vector, and then call
         drain method to extract the elements from the range */
