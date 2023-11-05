@@ -127,33 +127,34 @@ fn get_new_perms(old_perms: u32, diff: u32, users: Vec<UserType>, op: ChmodType)
     let mut total: u32 = old_perms;
     for user in users {
         let mut new_perms = 0o0;
+        /* If the perms are changed for owner or all */
         if user == UserType::ForOwner || user == UserType::ForAll {
             /* Calculate and add new perms */
             let owner = (total / (8 * 8)) % 8;
             let new = get_updated_perms(&owner, &diff, &op);
             new_perms += new * 64;
         } else {
-            /* Add the old perms */
+            /* If they aren't changed, add the old perms */
             new_perms += ((total / (8 * 8)) % 8) * 64;
         };
-
+        /* If the perms are changed for group or all */
         if user == UserType::ForGroup || user == UserType::ForAll {
             /* Calculate and add new perms */
             let group = (total / 8) % 8;
             let new = get_updated_perms(&group, &diff, &op);
             new_perms += new * 8;
         } else {
-            /* Add the old perms */
+            /* If they aren't changed, add the old perms */
             new_perms += ((total / 8) % 8) * 8;
         };
-
+        /* If the perms are changed for others or all */
         if user == UserType::ForOthers || user == UserType::ForAll {
             /* Calculate and add new perms */
             let others = total % 8;
             let new = get_updated_perms(&others, &diff, &op);
             new_perms += new;
         } else {
-            /* Add the old perms */
+            /* If they aren't changed, add the old perms */
             new_perms += total % 8;
         };
 

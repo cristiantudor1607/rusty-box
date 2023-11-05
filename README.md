@@ -26,10 +26,10 @@ I choose to implement each command on it's separate file name <font color="#87C4
 9. <font color="#87C4FF">**ls**</font>: About the options and the arguments, it's a similar approach to rm. This things are better explained in the code, so basically, after all the required verifications, I load the directory in a <font color="#0174BE">ReadDir</font> variable, and go through all of it's contents. In the recursive case, I call the function again, for every entry. The recursive call stops when it reaches a file.
 10. <font color="#87C4FF">**cp**</font>: It is worth talking about the recursive case. Similar approach to ls, but I had to parse some filenames (better see the code) before going into recursion, and creating some directories if neccessary. The basic copy functionality relies on the <font color="#00A9FF">copy()</font> function from <font color="#0174BE">std::fs</font>.
 11. <font color="#87C4FF">**touch**</font>: For updating the acces time, I open the file and read it's content. For updating the modification time, I open the file for append and I write an extra 0u8 byte at the end, that doesn't matter. If the file doesn't exists, I use the <font color="#00A9FF">create()</font> function.
-12. <font color="#87C4FF">**chmod**</font>: Maybe chmod was the hardest one, because I had to work with numbers in base 8. After even more checkings and setting flags, I get the current permissions, and perform operations on them. It would be pointless to explain the operations, because the code says it all. It was really hard to explain them even in comments. I used link [3] to learn how to set permissions.
+12. <font color="#87C4FF">**chmod**</font>: Maybe chmod was the hardest one, because I had to work with numbers in base 8. After even more checkings and setting flags, I get the current permissions using <font color="##0174BE">Metadata</font>, and perform operations on them. It would be pointless to explain the operations, because the code says it all. It was really hard to explain them even in comments. I used link [3] to learn how to set permissions.
 13. <font color="#87C4FF">**grep**</font>: This bonus was really easy, because the  <font color="#0174BE">regex</font> crate gave us <font color="#00A9FF">is_match()</font> method, which can be applied on a Regex variable to check if a string has a pattern.
 
-### Structures
+### Enums and why I used them
 > They are used in a limited scope, each with it's own command, and there isn't something complex about them
 
 1. **PathStatus**: it is used to fit a path in a category: Directory, File, Or it doesn't exist
@@ -107,6 +107,11 @@ pub enum ChmodType {
     Del,
 }
 ```
+
+### Observations
+* I thinks I used in a wrong way the concepts of ownership and borrowing, but the rust compiler and the rust analyzer helped me so much with this. I didn't understand very well those, but I'm re-learning them after this homework, to do a better work with the next one.
+* I used methods suggested by the rust analyzer, and I don't know if it is good or bad. For example, I often used **clone** and **to_string**, or **as_str**.
+
 ### Links
 [1] https://doc.rust-lang.org/std/macro.print.html <br>
 [2] https://fitech101.aalto.fi/programming-languages/rust/8-interaction-input-and-os/#:~:text=To%20read%20user%20input%20in,written%20on%20the%20command%20line <br>
