@@ -10,8 +10,7 @@ use crate::utils::read_file;
 
 fn typing_loop() {
     loop {
-        // TODO: Put source in README
-        /* https://fitech101.aalto.fi/programming-languages/rust/8-interaction-input-and-os/#:~:text=To%20read%20user%20input%20in,written%20on%20the%20command%20line. */
+        /* Check the link from README */
         let mut fake_input = String::new();
         match io::stdin().read_line(&mut fake_input) {
             Ok(_) => print!("{}", fake_input),
@@ -25,6 +24,7 @@ fn typing_loop() {
 }
 
 fn print_contents(buffer: Lines<BufReader<File>>) -> Result<(), std::io::Error> {
+    /* For each line in the buffer print it's characters if you can*/
     for line in buffer {
         match line {
             Ok(text) => println!("{}", text),

@@ -10,12 +10,13 @@ pub enum PathStatus {
     IsNot,
 }
 
+/* function that returns if the path is a file, a directory, or it doesn't exist */
 pub fn set_path_status(path: &String) -> Result<PathStatus, std::io::Error> {
     let path_struc = Path::new(path);
 
     match path_struc.try_exists() {
         Ok(ret) => {
-            /* Test if the path doesn't exist */
+            /* If it doesn't exists stop here */
             if ret == false {
                 return Ok(PathStatus::IsNot);
             };
@@ -24,6 +25,7 @@ pub fn set_path_status(path: &String) -> Result<PathStatus, std::io::Error> {
         Err(e) => return Err(e),
     };
 
+    /* If it exists, set it's type */
     match path_struc.is_dir() {
         true => return Ok(PathStatus::IsDir),
         false => return Ok(PathStatus::IsFile),
@@ -54,7 +56,8 @@ pub fn get_params(args: &Vec<String>, range: (usize, usize)) -> Vec<String> {
     and ending with the last element of the Vector */
     if sup == usize::MAX {
         /* Use clone to avoid making changes to the original Vector, and then call
-        drain method to extract the elements from the range */
+        drain method to extract the elements from the range (when I did this, 
+        I didn't know about slices)*/
         let params = args.clone().drain(inf..).collect::<Vec<String>>();
         return params;
     }

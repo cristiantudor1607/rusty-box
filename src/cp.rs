@@ -124,18 +124,23 @@ fn copy_dir(from: &String, to: &String) -> io::Result<()> {
     // TODO: Get rid of panics
     /* Go through all of it's contents */
     for entry in dir {
-        let item = entry?;
+        let item: fs::DirEntry;
+        match entry {
+            Ok(de) => item = de,
+            Err(e) => return Err(e),
+        };
 
         /* Create the new name for the file */
+        /* Get the old filename */
         let filename: String;
-
         match item.path().to_str() {
             Some(name) => filename = name.to_string(),
             None => return Err(Error::from(ErrorKind::Other)),
         };
 
+        /* Get the new_filename */
         let new_filename = cpget_newname(&filename, to);
-        println!("{} -> {}", filename, new_filename);
+
         /* If the item is a directory, create it before recursion */
         if item.file_type()?.is_dir() {
             match create_newdir(&new_filename) {
@@ -144,6 +149,7 @@ fn copy_dir(from: &String, to: &String) -> io::Result<()> {
             };
         };
 
+        /* Copy it */
         match copy_dir(&filename, &new_filename) {
             Ok(_) => (),
             Err(e) => return Err(e),
@@ -172,7 +178,6 @@ pub fn cp(args: &Vec<String>) -> Result<i32, ()> {
     let src: String;
     let dest: String;
 
-    // TODO: consider refactor this
     match opt {
         CpOption::NonRecursive => {
             match get_string(args, 2) {

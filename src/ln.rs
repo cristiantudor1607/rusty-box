@@ -27,6 +27,7 @@ fn lnget_link_type(args: &Vec<String>) -> Option<LinkType> {
         return None;
     }
 
+    /* If it reaches this point, it should be a hard link */
     return Some(LinkType::HardLink);
 }
 
@@ -43,9 +44,9 @@ pub fn ln(args: &Vec<String>) -> Result<i32, ()> {
         None => return Ok(-1),
     };
 
+    /* Get the source for the link and the name of the link */
     let src: String;
     let name: String;
-
     match link {
         LinkType::HardLink => {
             match get_string(args, 2) {
@@ -89,7 +90,7 @@ pub fn ln(args: &Vec<String>) -> Result<i32, ()> {
             };
         }
         LinkType::SoftLink => {
-            /* The compiler suggested to use symlink istead oh soft_link */
+            /* The compiler suggested to use symlink instead of soft_link */
             match symlink(src, name) {
                 Ok(_) => return Ok(0),
                 Err(e) => {

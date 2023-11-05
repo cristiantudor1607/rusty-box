@@ -17,7 +17,6 @@ fn rmset_options(args: &Vec<String>) -> RmOption {
     /* Set the return value to implicit option */
     let mut ret = RmOption::OnlyFiles;
 
-    // TODO: Reduce searching to first items in vector
     for arg in args {
         let item = arg.as_str();
         match item {

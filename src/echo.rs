@@ -37,11 +37,12 @@ pub fn echo(args: &Vec<String>) -> Result<i32, ()> {
         items = get_params(&args, (3, usize::MAX));
     };
 
-    /* Method to print inspired by https://doc.rust-lang.org/std/macro.print.html */
+    /* Check link [1] from README */
     let mut lock = stdout().lock();
 
     /* I want to use write! macro, and I need to add an extra space before each
     the string, to have spaces between them, but the first one */
+    /* Print the first item */
     let first = &items[0];
     match write!(lock, "{}", first) {
         Ok(_) => (),
@@ -51,6 +52,7 @@ pub fn echo(args: &Vec<String>) -> Result<i32, ()> {
         }
     };
 
+    /* Print the rest of the items */
     for i in 1..items.len() {
         match write!(lock, " {}", items[i]) {
             Ok(_) => (),
@@ -61,6 +63,7 @@ pub fn echo(args: &Vec<String>) -> Result<i32, ()> {
         };
     }
 
+    /* Print the newline if it's the case */
     if newline {
         match write!(lock, "\n") {
             Ok(_) => (),

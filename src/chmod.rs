@@ -128,29 +128,36 @@ fn get_new_perms(old_perms: u32, diff: u32, users: Vec<UserType>, op: ChmodType)
     for user in users {
         let mut new_perms = 0o0;
         if user == UserType::ForOwner || user == UserType::ForAll {
+            /* Calculate and add new perms */
             let owner = (total / (8 * 8)) % 8;
             let new = get_updated_perms(&owner, &diff, &op);
             new_perms += new * 64;
         } else {
+            /* Add the old perms */
             new_perms += ((total / (8 * 8)) % 8) * 64;
         };
 
         if user == UserType::ForGroup || user == UserType::ForAll {
+            /* Calculate and add new perms */
             let group = (total / 8) % 8;
             let new = get_updated_perms(&group, &diff, &op);
             new_perms += new * 8;
         } else {
+            /* Add the old perms */
             new_perms += ((total / 8) % 8) * 8;
         };
 
         if user == UserType::ForOthers || user == UserType::ForAll {
+            /* Calculate and add new perms */
             let others = total % 8;
             let new = get_updated_perms(&others, &diff, &op);
             new_perms += new;
         } else {
+            /* Add the old perms */
             new_perms += total % 8;
         };
 
+        /* The new perms become the current perms for the next iteration */
         total = new_perms;
     }
 
@@ -175,7 +182,7 @@ pub fn get_metadata(filename: &String) -> Result<Metadata, std::io::Error> {
     Ok(metadata)
 }
 
-/* Method taken from: https://doc.rust-lang.org/std/os/unix/fs/trait.PermissionsExt.html */
+/* Check link 3 from README */
 fn set_perm(filename: &String, perms: u32) -> Result<(), std::io::Error> {
     /* Get the metadata of the file */
     let metadata: Metadata;

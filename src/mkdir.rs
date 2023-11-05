@@ -1,7 +1,7 @@
+use std::fs::DirBuilder;
 use crate::utils::get_params;
 use crate::utils::set_path_status;
 use crate::utils::PathStatus;
-use std::fs::DirBuilder;
 
 pub fn create_newdir(path: &String) -> Result<(), std::io::Error> {
     /* Create the builder */
@@ -32,10 +32,15 @@ pub fn mkdir(args: &Vec<String>) -> Result<i32, ()> {
         match set_path_status(&dir) {
             Ok(stat) => {
                 match stat {
-                    /* If the path is an existing file or directory, set the
-                    error variable and do nothing */
-                    // TODO: add println! with error
-                    PathStatus::IsDir | PathStatus::IsFile => error = true,
+                    /* If the path already exists, print an error and do nothing */
+                    PathStatus::IsDir => {
+                        eprintln!("mkdir: {}: Directory exists", dir);
+                        error = true;
+                    },
+                    PathStatus::IsFile => {
+                        eprintln!("mkdir: {}: File exists", dir);
+                        error = true;
+                    },
                     /* If the path doesn't exist we can create it */
                     PathStatus::IsNot => {
                         match create_newdir(&dir) {
@@ -55,6 +60,7 @@ pub fn mkdir(args: &Vec<String>) -> Result<i32, ()> {
         };
     }
 
+    /* Throw the error */
     if error {
         return Err(());
     };

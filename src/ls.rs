@@ -52,6 +52,7 @@ fn get_pathname(args: &Vec<String>, lstype: ListingType) -> Result<String, std::
         return Ok(args[n - 1].clone());
     };
 
+    /* The rest of the cases */
     match std::env::current_dir() {
         Ok(path) => {
             match path.to_str() {
@@ -81,6 +82,7 @@ fn default_listing(pathname: &String, lstype: ListingType) -> Result<(), Error> 
         false => (),
     };
 
+    /* Load the directory, if possible */
     let curr_dir: ReadDir;
     match read_dir(pathname) {
         Ok(d) => curr_dir = d,
@@ -109,7 +111,7 @@ fn default_listing(pathname: &String, lstype: ListingType) -> Result<(), Error> 
         /* Get the relative path */
         let realtive_name = get_relative_path(&name);
 
-        /* Split the name into characters */
+        /* Split the name into characters to check if it is a hidden file */
         let word: Vec<char> = realtive_name.chars().collect();
         if word[0] == '.' && lstype != ListingType::All {
             continue;
@@ -165,8 +167,10 @@ fn recursive_listing(pathname: &String, lstype: ListingType) -> Result<(), Error
 }
 
 pub fn ls(args: &Vec<String>) -> Result<i32, ()> {
+    /* Get the type of listing */
     let lstype = get_listing_type(args);
 
+    /* Get the listing path */
     let pathname: String;
     match get_pathname(args, lstype.clone()) {
         Ok(name) => pathname = name,
@@ -176,6 +180,7 @@ pub fn ls(args: &Vec<String>) -> Result<i32, ()> {
         }
     };
 
+    /* Switch between cases and list the path */
     match lstype {
         ListingType::Default | ListingType::All => {
             match default_listing(&pathname, lstype) {
