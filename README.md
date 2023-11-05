@@ -109,6 +109,6 @@ pub enum ChmodType {
 ```
 ### Links
 [1] https://doc.rust-lang.org/std/macro.print.html <br>
-[2] https://fitech101.aalto.fi/programming-languages/rust/8-interaction-input-and-os/#:~:text=To%20read%20user%20input%20in,written%20on%20the%20command%20line
+[2] https://fitech101.aalto.fi/programming-languages/rust/8-interaction-input-and-os/#:~:text=To%20read%20user%20input%20in,written%20on%20the%20command%20line <br>
 [3] https://doc.rust-lang.org/std/os/unix/fs/trait.PermissionsExt.html
 
