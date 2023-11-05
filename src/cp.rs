@@ -93,7 +93,6 @@ fn cpparse_dest(src: &String, dest: &String) -> Option<String> {
 
 fn copy_dir(from: &String, to: &String) -> io::Result<()> {
     /* Base case: When it reaches a file */
-    println!("{}", from);
     let from_type = set_entry_type(from);
     match from_type {
         /* Return the error */
